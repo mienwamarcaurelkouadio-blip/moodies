@@ -1,0 +1,691 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Administration | THE SNACK SPOT</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+
+        .sidebar {
+            background-color: #212529;
+            min-height: 100vh;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 13px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .stat-card {
+            border: none;
+            border-radius: 12px;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .table img {
+            width: 55px;
+            height: 55px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 767px) {
+            .sidebar {
+                min-height: auto;
+            }
+
+            .main-content {
+                padding: 18px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container-fluid">
+
+        <div class="row">
+
+            <!-- BARRE LATERALE -->
+            <aside class="col-md-3 col-lg-2 sidebar p-3">
+
+                <h4 class="text-warning text-center my-4">
+                    THE SNACK SPOT
+                </h4>
+
+                <hr class="text-white">
+
+                <nav>
+
+                    <a href="#accueil" class="active">
+                        🏠 Tableau de bord
+                    </a>
+
+                    <a href="#produits">
+                        🥞 Produits
+                    </a>
+
+                    <a href="#ajouter">
+                        ➕ Ajouter un produit
+                    </a>
+
+                    <a href="#commandes">
+                        📦 Commandes
+                    </a>
+
+                    <a href="index.html">
+                        🌐 Voir la boutique
+                    </a>
+
+                </nav>
+
+            </aside>
+
+
+            <!-- CONTENU PRINCIPAL -->
+            <main class="col-md-9 col-lg-10 main-content">
+
+                <!-- EN-TETE -->
+                <section id="accueil">
+
+                    <h2 class="fw-bold">
+                        Tableau de bord
+                    </h2>
+
+                    <button id="btn-deconnexion" class="btn btn-danger">
+    Déconnexion
+</button>
+
+                    <p class="text-muted">
+                        Bienvenue dans votre espace de gestion.
+                    </p>
+
+                    <!-- ZONE DE NOTIFICATIONS -->
+<div id="zone-notifications" class="alert alert-warning d-flex justify-content-between align-items-center mt-3" role="alert">
+
+    <div>
+        <strong>🔔 Notifications</strong>
+        <span id="message-notification" class="ms-2">
+            Aucune nouvelle commande.
+        </span>
+    </div>
+
+    <span class="badge bg-dark" id="compteur-notifications">
+        0
+    </span>
+
+</div>
+
+                </section>
+
+
+                <!-- STATISTIQUES DES PRODUITS -->
+                <div class="row g-3 my-4">
+
+                    <div class="col-md-6">
+
+                        <div class="card stat-card shadow-sm p-4">
+
+                            <p class="text-muted mb-1">
+                                Nombre de produits
+                            </p>
+
+                            <h2 id="nombre-produits">
+                                0
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <div class="card stat-card shadow-sm p-4">
+
+                            <p class="text-muted mb-1">
+                                Stock total disponible
+                            </p>
+
+                            <h2 id="stock-total">
+                                0
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- STATISTIQUES COMMERCIALES -->
+                <div class="row g-3 mb-4">
+
+                    <div class="col-md-6 col-lg-3">
+
+                        <div class="card stat-card shadow-sm p-4">
+
+                            <p class="text-muted mb-1">
+                                Total commandes
+                            </p>
+
+                            <h2 id="stat-total-commandes">
+                                0
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6 col-lg-3">
+
+                        <div class="card stat-card shadow-sm p-4">
+
+                            <p class="text-muted mb-1">
+                                Chiffre d'affaires
+                            </p>
+
+                            <h2 id="stat-chiffre-affaires">
+                                0 FCFA
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6 col-lg-3">
+
+                        <div class="card stat-card shadow-sm p-4">
+
+                            <p class="text-muted mb-1">
+                                Commandes en attente
+                            </p>
+
+                            <h2 id="stat-commandes-attente">
+                                0
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6 col-lg-3">
+
+                        <div class="card stat-card shadow-sm p-4">
+
+                            <p class="text-muted mb-1">
+                                Commandes livrées
+                            </p>
+
+                            <h2 id="stat-commandes-livrees">
+                                0
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+<!-- GRAPHIQUE DES VENTES -->
+<section class="mb-5">
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-body p-4">
+
+            <h4 class="mb-4">
+                Évolution du chiffre d'affaires
+            </h4>
+
+            <canvas id="graphique-ventes"></canvas>
+
+        </div>
+
+    </div>
+
+</section>
+
+                <!-- FORMULAIRE D'AJOUT -->
+                <section id="ajouter" class="mb-5">
+
+                    <div class="card shadow-sm border-0">
+
+                        <div class="card-body p-4">
+
+                            <h4 class="mb-4">
+                                Ajouter une nouvelle crêpe
+                            </h4>
+
+                            <form id="form-produit">
+
+                                <div class="row g-3">
+
+                                    <div class="col-md-6">
+
+                                        <label class="form-label">
+                                            Nom de la crêpe
+                                        </label>
+
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            id="nom"
+                                            required
+                                        >
+
+                                    </div>
+
+
+                                    <div class="col-md-6">
+
+                                        <label class="form-label">
+                                            Prix (FCFA)
+                                        </label>
+
+                                        <input
+                                            type="number"
+                                            class="form-control"
+                                            id="prix"
+                                            min="1"
+                                            required
+                                        >
+
+                                    </div>
+
+
+                                    <div class="col-12">
+
+                                        <label class="form-label">
+                                            Description
+                                        </label>
+
+                                        <textarea
+                                            class="form-control"
+                                            id="description"
+                                            rows="2"
+                                            required
+                                        ></textarea>
+
+                                    </div>
+
+
+                                    <div class="col-md-6">
+
+                                        <label class="form-label">
+                                            Nom de l'image
+                                        </label>
+
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            id="image"
+                                            placeholder="crepes caramel.jpg"
+                                            required
+                                        >
+
+                                    </div>
+
+
+                                    <div class="col-md-6">
+
+                                        <label class="form-label">
+                                            Stock disponible
+                                        </label>
+
+                                        <input
+                                            type="number"
+                                            class="form-control"
+                                            id="stock"
+                                            min="0"
+                                            required
+                                        >
+
+                                    </div>
+
+
+                                    <div class="col-12">
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-warning px-4"
+                                        >
+                                            Ajouter le produit
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                                <p id="message" class="mt-3 mb-0"></p>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- LISTE DES PRODUITS -->
+                <section id="produits">
+
+                    <div class="card shadow-sm border-0">
+
+                        <div class="card-body p-4">
+
+                            <h4 class="mb-4">
+                                Nos produits
+                            </h4>
+
+                            <div class="table-responsive">
+
+                                <table class="table table-hover align-middle">
+
+                                    <thead class="table-dark">
+
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Image</th>
+                                            <th>Nom</th>
+                                            <th>Prix</th>
+                                            <th>Stock</th>
+                                            <th>Actions</th>
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody id="table-produits">
+
+                                        <tr>
+                                            <td colspan="6" class="text-center">
+                                                Chargement des produits...
+                                            </td>
+                                        </tr>
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- GESTION DES COMMANDES -->
+                <section id="commandes" class="mt-5">
+
+                    <div class="card shadow-sm border-0">
+
+                        <div class="card-body p-4">
+
+                            <h4 class="mb-4">
+                                Gestion des commandes
+                            </h4>
+
+                            <div class="table-responsive">
+
+                                <div class="row g-2 mb-3">
+
+    <div class="col-md-6">
+        <input
+            type="text"
+            id="recherche-commandes"
+            class="form-control"
+            placeholder="Rechercher par numéro, client ou téléphone..."
+        >
+    </div>
+
+    <div class="col-md-6">
+        <select id="filtre-statut-commandes" class="form-select">
+            <option value="">Tous les statuts</option>
+            <option value="En attente">En attente</option>
+            <option value="En préparation">En préparation</option>
+            <option value="Livrée">Livrée</option>
+            <option value="Annulée">Annulée</option>
+        </select>
+    </div>
+
+</div>
+
+                                <table class="table table-hover align-middle">
+
+                                    <thead class="table-dark">
+
+                                        <tr>
+                                            <th>N°</th>
+                                            <th>Client</th>
+                                            <th>Produits</th>
+                                            <th>Total</th>
+                                            <th>Réception</th>
+                                            <th>Date</th>
+                                            <th>Statut</th>
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody id="table-commandes">
+
+                                        <tr>
+                                            <td colspan="7" class="text-center">
+                                                Chargement des commandes...
+                                            </td>
+                                        </tr>
+
+                                    </tbody>
+
+                                </table>
+<div class="d-flex justify-content-between align-items-center mt-3">
+
+    <small id="info-pagination-commandes">
+        Page 1
+    </small>
+
+    <div>
+        <button
+            type="button"
+            id="btn-page-precedente"
+            class="btn btn-outline-dark btn-sm"
+            disabled
+        >
+            Précédent
+        </button>
+
+        <button
+            type="button"
+            id="btn-page-suivante"
+            class="btn btn-dark btn-sm"
+        >
+            Suivant
+        </button>
+    </div>
+
+</div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </main>
+
+        </div>
+
+    </div>
+
+
+    <!-- FENÊTRE DE MODIFICATION -->
+    <div class="modal fade" id="modalModification" tabindex="-1" aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content">
+
+                <div class="modal-header bg-warning">
+
+                    <h5 class="modal-title">
+                        Modifier une crêpe
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <form id="form-modification">
+
+                        <input type="hidden" id="edit-id">
+
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Nom de la crêpe
+                            </label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="edit-nom"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Prix (FCFA)
+                            </label>
+
+                            <input
+                                type="number"
+                                class="form-control"
+                                id="edit-prix"
+                                min="1"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Description
+                            </label>
+
+                            <textarea
+                                class="form-control"
+                                id="edit-description"
+                                required
+                            ></textarea>
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Nom de l'image
+                            </label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="edit-image"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Stock
+                            </label>
+
+                            <input
+                                type="number"
+                                class="form-control"
+                                id="edit-stock"
+                                min="0"
+                                required
+                            >
+
+                        </div>
+
+
+                        <p id="message-modification"></p>
+
+                        <button
+                            type="submit"
+                            class="btn btn-warning w-100"
+                        >
+                            Enregistrer les modifications
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- JavaScript administrateur -->
+    <script src="admin.js"></script>
+
+</body>
+</html>

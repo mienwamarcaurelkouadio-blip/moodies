@@ -1,0 +1,296 @@
+
+
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Finaliser ma commande | THE SNACK SPOT</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+    <header>
+        <nav class="navbar navbar-expand-lg bg-white shadow-sm">
+            <div class="container">
+
+                <a class="navbar-brand fw-bold" href="index.html">
+                    MOODIES
+                </a>
+
+                <button class="navbar-toggler" type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#menuNavigation">
+
+                    <span class="navbar-toggler-icon"></span>
+
+                </button>
+
+                <div class="collapse navbar-collapse" id="menuNavigation">
+
+                    <ul class="navbar-nav ms-auto gap-lg-3">
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Accueil</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html#menu">Nos crêpes</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="panier.html">Mon panier 🛒</a>
+                        </li>
+
+                    </ul>
+
+                </div>
+
+            </div>
+        </nav>
+    </header>
+
+
+    <!-- FORMULAIRE DE COMMANDE -->
+    <main class="py-5">
+
+        <div class="container">
+
+            <div class="text-center mb-5">
+
+                <p class="text-warning fw-bold">DERNIÈRE ÉTAPE</p>
+
+                <h1 class="fw-bold">Finaliser ma commande</h1>
+
+                <p class="text-muted">
+                    Renseignez vos informations pour recevoir vos délicieuses crêpes.
+                </p>
+
+            </div>
+
+
+            <div class="row justify-content-center">
+
+                <div class="col-lg-7">
+
+                    <div class="card border-0 shadow-sm">
+
+                        <div class="card-body p-4 p-md-5">
+
+                            <h4 class="fw-bold mb-4">
+                                Informations personnelles
+                            </h4>
+
+<!-- RÉCAPITULATIF DE LA COMMANDE -->
+<div class="bg-light rounded-3 p-4 mb-4">
+
+    <h4 class="fw-bold mb-3">
+        Résumé de votre commande
+    </h4>
+
+    <div id="recapitulatif-commande">
+        <!-- Les produits seront affichés ici -->
+    </div>
+
+    
+<hr>
+
+<!-- SOUS-TOTAL DES ACHATS -->
+<div class="d-flex justify-content-between mb-3">
+
+    <span>Sous-total des achats :</span>
+
+    <strong id="sous-total-commande">
+        0 FCFA
+    </strong>
+
+</div>
+
+
+<!-- FRAIS DE LIVRAISON -->
+<div class="d-flex justify-content-between mb-3">
+
+    <span>Frais de livraison :</span>
+
+    <strong id="frais-livraison">
+        0 FCFA
+    </strong>
+
+</div>
+
+<hr>
+
+<!-- TOTAL FINAL -->
+<div class="d-flex justify-content-between">
+
+    <strong>Total à payer :</strong>
+
+    <strong class="text-warning" id="total-commande">
+        0 FCFA
+    </strong>
+
+</div>
+
+
+</div>
+                            <form id="formulaire-commande">
+
+                                <!-- NOM -->
+                                <div class="mb-3">
+
+                                    <label for="nom-client" class="form-label">
+                                        Nom complet
+                                    </label>
+
+                                    <input type="text"
+                                        class="form-control"
+                                        id="nom-client"
+                                        placeholder="Ex : Marc Kouadio"
+                                        required>
+
+                                </div>
+
+
+                                <!-- TELEPHONE -->
+                                <div class="mb-3">
+
+                                    <label for="telephone-client" class="form-label">
+                                        Numéro de téléphone
+                                    </label>
+
+                                    <input type="tel"
+                                        class="form-control"
+                                        id="telephone-client"
+                                        placeholder="Ex : 0700000000"
+                                        required>
+
+                                </div>
+
+
+                                <!-- ADRESSE -->
+                                
+<!-- MODE DE RÉCEPTION -->
+<div class="mb-3">
+
+    <label for="mode-reception" class="form-label">
+        Comment souhaitez-vous recevoir votre commande ?
+    </label>
+
+    <select class="form-select" id="mode-reception" required>
+
+        <option value="">Choisir une option</option>
+
+        <option value="Livraison à domicile">
+            Livraison à domicile
+        </option>
+
+        <option value="Retrait sur place">
+            Retrait sur place
+        </option>
+
+    </select>
+
+</div>
+
+
+<!-- ADRESSE DE LIVRAISON -->
+
+
+<!-- ADRESSE DE LIVRAISON -->
+<div class="mb-3" id="bloc-adresse" style="display: none;">
+
+    <label for="adresse-client" class="form-label">
+        Adresse de livraison
+    </label>
+
+    <textarea
+        class="form-control"
+        id="adresse-client"
+        rows="3"
+        placeholder="Commune, quartier et indications">
+    </textarea>
+
+</div>
+
+
+<!-- MODE DE PAIEMENT -->
+<div class="mb-4">
+
+    <label for="mode-paiement" class="form-label">
+        Moyen de paiement
+    </label>
+
+    <select class="form-select" id="mode-paiement" required>
+
+        <option value="Espèces">
+            Espèces
+        </option>
+
+        <option value="Wave bientôt disponible" disabled>
+            Wave (bientôt disponible)
+        </option>
+
+    </select>
+
+</div>
+
+
+                                <!-- BOUTON -->
+                                <button type="submit"
+                                    class="btn btn-success w-100 py-3 fw-bold">
+
+                                    Confirmer ma commande 
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                    <div class="text-center mt-4">
+
+                        <a href="panier.html" class="text-decoration-none">
+                            ← Retourner au panier
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer class="bg-dark text-white text-center py-3">
+
+        <p class="mb-0">
+            © 2026 THE SNACK SPOT - Tous droits réservés.
+        </p>
+
+    </footer>
+
+
+    <!-- BOOTSTRAP JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JAVASCRIPT -->
+    <script src="commande.js"></script>
+
+</body>
+
+</html>

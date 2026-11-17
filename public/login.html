@@ -1,0 +1,51 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Admin | THE SNACK SPOT</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+    <div class="container min-vh-100 d-flex justify-content-center align-items-center">
+
+        <div class="card shadow border-0 p-4" style="width: 100%; max-width: 420px;">
+
+            <div class="text-center mb-4">
+                <h2 class="fw-bold">THE SNACK SPOT</h2>
+                <p class="text-muted">Espace administrateur</p>
+            </div>
+
+            <form id="formulaire-connexion">
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Adresse email</label>
+                    <input type="email" id="email" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="mot-de-passe" class="form-label">Mot de passe</label>
+                    <input type="password" id="mot-de-passe" class="form-control" required>
+                </div>
+
+                <div id="message" class="mb-3 text-danger"></div>
+
+                <button type="submit" class="btn btn-warning w-100 fw-bold">
+                    Se connecter
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <script src="login.js"></script>
+
+</body>
+</html>

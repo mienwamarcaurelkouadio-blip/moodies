@@ -1,0 +1,382 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>THE SNACK SPOT | Nos délicieuses crêpes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- CSS personnel -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+    <header>
+        <nav class="navbar navbar-expand-lg bg-white shadow-sm">
+            <div class="container">
+
+                <a class="navbar-brand fw-bold" href="index.html">
+                     <span>MOODIES</span> 
+                </a>
+
+                <button class="navbar-toggler" type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#menuNavigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="menuNavigation">
+
+                    <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
+
+                        <li class="nav-item">
+                            <a class="nav-link active" href="index.html">Accueil</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#menu">Nos crêpes</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#parole">Parole du jour</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#contact">Contact</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#menu" class="btn btn-dark">
+                                Commander
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link panier-link" href="panier.html">
+                                🛒 Mon panier
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+
+    <!-- CONTENU PRINCIPAL -->
+    <main>
+
+        <!-- HERO -->
+        <section class="hero">
+            <div class="container">
+                <div class="row align-items-center">
+
+                    <div class="col-lg-6 hero-content">
+
+                        <span class="hero-badge">
+                            ✨ LE PLAISIR À CHAQUE BOUCHÉE
+                        </span>
+
+                        <h1>
+                            Une envie de crêpes ?
+                            <span>On s'occupe de tout !</span>
+                        </h1>
+
+                        <p>
+                            Découvrez nos délicieuses crêpes préparées
+                            avec amour. Nature, chocolat ou poulet,
+                            il y en a pour toutes les envies !
+                        </p>
+
+                        <a href="#menu" class="btn-hero">
+                            Découvrir nos crêpes
+                            <span>→</span>
+                        </a>
+
+                        <div class="hero-info">
+                            <span>🥞 Fraîcheur</span>
+                            <span>❤️ Gourmandise</span>
+                            <span>✨ Qualité</span>
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-6 hero-image-container">
+                        <div class="hero-image-wrapper">
+                            <img
+                                src="crepes au chocolat 2.jpg"
+                                alt="Délicieuse crêpe au chocolat"
+                                class="hero-image">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+
+        <!-- NOS CREPES -->
+        <section id="menu" class="py-5">
+            <div class="container">
+
+                <div class="section-heading text-center mb-5">
+                    <p class="section-label">NOTRE MENU</p>
+
+                    <h2>Découvrez nos crêpes</h2>
+
+                    <p>
+                        Des saveurs délicieuses pour satisfaire
+                        toutes vos envies !
+                    </p>
+                </div>
+
+                <!-- PRODUITS CHARGÉS DEPUIS MYSQL -->
+                <div class="row g-4" id="liste-produits">
+
+                    <div class="col-12 text-center">
+                        <p>Chargement de nos délicieuses crêpes...</p>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- PAROLE DU JOUR -->
+        <section id="parole" class="py-5">
+            <div class="container">
+
+                <div class="verset-card text-center">
+
+                    <div class="verset-icon">📖</div>
+
+                    <p class="section-label">UN MOMENT D'INSPIRATION</p>
+
+                    <h2>La parole du jour</h2>
+
+                    <p class="verset-description">
+                        Une parole pour nourrir ton cœur et fortifier ta foi.
+                    </p>
+
+                    <div id="verset" aria-live="polite">
+                        Clique sur le bouton pour recevoir un verset.
+                    </div>
+
+                    <div id="reference"></div>
+
+                    <div id="copyright"></div>
+
+                    <button id="bouton" onclick="genererVerset()">
+                        Recevoir un verset ✨
+                    </button>
+
+                </div>
+
+            </div>
+        </section>
+
+
+<!-- SECTION CITATION -->
+<section id="citation" class="py-5">
+    <div class="container">
+
+        <div class="verset-card text-center">
+
+            <div class="verset-icon">💡</div>
+
+            <p class="section-label">UNE PENSÉE POUR LA JOURNÉE</p>
+
+            <h2>Une citation inspirante</h2>
+
+            <p id="citation-texte" aria-live="polite">
+                Clique sur le bouton pour découvrir une citation.
+            </p>
+
+            <div id="citation-auteur"></div>
+
+            <button id="citation-bouton" onclick="getCitation()">
+                Découvrir une citation ✨
+            </button>
+
+        </div>
+
+    </div>
+</section>
+
+
+
+        <!-- CONTACT -->
+        <section id="contact" class="py-5">
+            <div class="container text-center">
+
+                <p class="section-label">NOUS CONTACTER</p>
+
+                <h2>Une envie de crêpes ?</h2>
+
+                <p>
+                    Faites-vous plaisir et contactez-nous
+                    pour passer votre commande !
+                </p>
+
+                <a href="#" class="btn btn-success">
+                    Nous contacter sur WhatsApp
+                </a>
+
+            </div>
+        </section>
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer class="text-white text-center py-4">
+
+        <h5>THE SNACK SPOT.</h5>
+
+        <p class="mb-0">
+            © 2026 THE SNACK SPOT - Tous droits réservés.
+        </p>
+
+    </footer>
+
+
+    <!-- BOOTSTRAP JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- SCRIPT DES PRODUITS ET DU PANIER -->
+    <script src="script.js"></script>
+
+
+    <!-- API BIBLIQUE -->
+    <script>
+
+        const references = [
+            "psalms/23/1",
+            "psalms/27/1",
+            "psalms/46/1",
+            "proverbs/3/5",
+            "proverbs/3/6",
+            "john/3/16",
+            "matthew/6/33",
+            "philippians/4/13",
+            "isaiah/41/10",
+            "romans/8/28",
+            "joshua/1/9",
+            "jeremiah/29/11",
+            "matthew/11/28",
+            "romans/12/2"
+        ];
+
+        async function genererVerset() {
+
+            const bouton = document.getElementById("bouton");
+            const affichage = document.getElementById("verset");
+            const reference = document.getElementById("reference");
+            const copyright = document.getElementById("copyright");
+
+            try {
+
+                bouton.disabled = true;
+                bouton.textContent = "Chargement...";
+
+                affichage.textContent = "Recherche d'un verset...";
+                reference.textContent = "";
+                copyright.textContent = "";
+
+                const index = Math.floor(
+                    Math.random() * references.length
+                );
+
+                const choix = references[index];
+
+                const reponse = await fetch(
+                    `https://api.midvash.com/v1/lsg/${choix}`
+                );
+
+                if (!reponse.ok) {
+                    throw new Error("Erreur API");
+                }
+
+                const resultat = await reponse.json();
+
+                affichage.textContent = resultat.data.text;
+
+                reference.textContent =
+                    resultat.meta.reference;
+
+                copyright.textContent =
+                    resultat.meta.copyright;
+
+            } catch (erreur) {
+
+                affichage.textContent =
+                    "Impossible de récupérer le verset. Réessaie plus tard.";
+
+                console.error(erreur);
+
+            } finally {
+
+                bouton.disabled = false;
+                bouton.textContent = "Recevoir un autre verset ✨";
+
+            }
+
+        }
+
+
+async function getCitation() {
+
+    const citation = document.getElementById("citation-texte");
+    const auteur = document.getElementById("citation-auteur");
+    const bouton = document.getElementById("citation-bouton");
+
+    try {
+
+        bouton.disabled = true;
+        bouton.textContent = "Chargement...";
+
+        citation.textContent = "Recherche d'une citation...";
+        auteur.textContent = "";
+
+        const reponse = await fetch(
+            "https://dummyjson.com/quotes/random"
+        );
+
+        if (!reponse.ok) {
+            throw new Error("Erreur API");
+        }
+
+        const data = await reponse.json();
+
+        citation.textContent = `"${data.quote}"`;
+        auteur.textContent = "— " + data.author;
+
+    } catch (erreur) {
+
+        citation.textContent =
+            "Impossible de récupérer une citation. Réessaie.";
+
+        console.error(erreur);
+
+    } finally {
+
+        bouton.disabled = false;
+        bouton.textContent = "Découvrir une autre citation ✨";
+
+    }
+}
+
+
+    </script>
+
+</body>
+</html>
