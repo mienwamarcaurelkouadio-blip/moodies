@@ -175,53 +175,20 @@ formulaire.addEventListener("submit", async function(event) {
         // Préparer le message WhatsApp
         
 // Préparer le message WhatsApp
-let message = "🥞 *THE SNACK SPOT — NOUVELLE COMMANDE*\n\n";
-
-message += "📋 *Commande n°" + resultat.commandeId + "*\n\n";
-
-message += "👤 *INFORMATIONS CLIENT*\n";
-message += "Nom : " + nom + "\n";
-message += "Téléphone : " + telephone + "\n";
-message += "Réception : " + mode + "\n";
-
-if (mode === "Livraison à domicile") {
-    message += "Adresse : " + adresse + "\n";
-}
-
-message += "Paiement : " + paiement + "\n\n";
-
-message += "🛒 *DÉTAILS DE LA COMMANDE*\n";
-
-let sousTotal = 0;
-
-panier.forEach(produit => {
-    const montant = produit.prix * produit.quantite;
-    sousTotal += montant;
-
-    message += "• " + produit.nom +
-        " x " + produit.quantite +
-        " : " + montant + " FCFA\n";
-});
-
-const frais = mode === "Livraison à domicile" ? 1000 : 0;
-
-message += "\nSous-total : " + sousTotal + " FCFA\n";
-message += "Livraison : " + frais + " FCFA\n";
-message += "\n💰 *TOTAL À PAYER : " + resultat.total + " FCFA*\n\n";
-
-message += "Merci d'avoir choisi THE SNACK SPOT ! ❤️";
-
-const numeroWhatsApp = "2250170631187";
-const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(message)}`;
 
 
-        window.open(url, "_blank");
+
 
         localStorage.removeItem("panier");
 
-        alert("Commande enregistrée avec succès !");
+alert(
+    "Commande enregistrée avec succès !\n\n" +
+    "Votre numéro de commande est : #" + resultat.commandeId +
+    "\n\nVous allez être redirigé vers le suivi de votre commande."
+);
 
-        window.location.href = "index.html";
+window.location.href = "suivi-commande.html";
+
 
     } catch (erreur) {
 

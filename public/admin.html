@@ -11,57 +11,136 @@
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <style>
-        body {
-            background-color: #f5f5f5;
-        }
+    
+<style>
+    /* STYLE GÉNÉRAL */
+    body {
+        background-color: #fff8f1;
+        color: #3d342e;
+        font-family: 'Segoe UI', sans-serif;
+    }
 
+    /* MENU LATÉRAL */
+    .sidebar {
+        background-color: #ffffff;
+        min-height: 100vh;
+        border-right: 1px solid #f0e4d8;
+    }
+
+    .sidebar a {
+        color: #65584f;
+        text-decoration: none;
+        display: block;
+        padding: 13px 15px;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+        background-color: #fff0df;
+        color: #e8792e;
+        transform: translateX(3px);
+    }
+
+    /* CARTES STATISTIQUES */
+    .stat-card {
+        border: none;
+        border-radius: 16px;
+        background: #ffffff;
+        box-shadow: 0 5px 20px rgba(80, 50, 20, 0.06);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+    }
+
+    /* CONTENU PRINCIPAL */
+    .main-content {
+        padding: 30px;
+    }
+
+    /* CARTES */
+    .card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 5px 20px rgba(80, 50, 20, 0.06);
+    }
+
+    /* TITRES */
+    h1, h2, h3, h4, h5 {
+        color: #3d342e;
+        font-weight: 700;
+    }
+
+    /* BOUTONS */
+    .btn-dark {
+        background-color: #e8792e;
+        border-color: #e8792e;
+        color: white;
+    }
+
+    .btn-dark:hover {
+        background-color: #cf641f;
+        border-color: #cf641f;
+        color: white;
+    }
+
+    .btn-danger {
+        background-color: #dc6259;
+        border-color: #dc6259;
+    }
+
+    /* CHAMPS DE SAISIE */
+    .form-control,
+    .form-select {
+        border: 1px solid #eadfd4;
+        border-radius: 10px;
+        padding: 11px;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #e8792e;
+        box-shadow: 0 0 0 3px rgba(232, 121, 46, 0.12);
+    }
+
+    /* TABLEAUX */
+    .table {
+        border-color: #f1e8df;
+    }
+
+    .table-dark th {
+        background-color: #fff0df;
+        color: #8c4b20;
+        border: none;
+    }
+
+    .table img {
+        width: 55px;
+        height: 55px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+
+    /* BOUTONS ARRONDIS */
+    button {
+        border-radius: 9px !important;
+    }
+
+    /* VERSION MOBILE */
+    @media (max-width: 767px) {
         .sidebar {
-            background-color: #212529;
-            min-height: 100vh;
-        }
-
-        .sidebar a {
-            color: white;
-            text-decoration: none;
-            display: block;
-            padding: 13px 15px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
-
-        .sidebar a:hover,
-        .sidebar a.active {
-            background-color: #ffc107;
-            color: #212529;
-        }
-
-        .stat-card {
-            border: none;
-            border-radius: 12px;
+            min-height: auto;
         }
 
         .main-content {
-            padding: 30px;
+            padding: 18px;
         }
-
-        .table img {
-            width: 55px;
-            height: 55px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
-        @media (max-width: 767px) {
-            .sidebar {
-                min-height: auto;
-            }
-
-            .main-content {
-                padding: 18px;
-            }
-        }
-    </style>
+    }
+</style>
 
 </head>
 
@@ -82,27 +161,31 @@
 
                 <nav>
 
-                    <a href="#accueil" class="active">
-                        🏠 Tableau de bord
-                    </a>
+    <a href="#accueil" class="active">
+        🏠 Tableau de bord
+    </a>
 
-                    <a href="#produits">
-                        🥞 Produits
-                    </a>
+    <a href="#produits">
+        🥞 Produits
+    </a>
 
-                    <a href="#ajouter">
-                        ➕ Ajouter un produit
-                    </a>
+    <a href="#ajouter">
+        ➕ Ajouter un produit
+    </a>
 
-                    <a href="#commandes">
-                        📦 Commandes
-                    </a>
+    <a href="#commandes">
+        📦 Commandes
+    </a>
 
-                    <a href="index.html">
-                        🌐 Voir la boutique
-                    </a>
+    <a href="#administrateurs">
+        👥 Administrateurs
+    </a>
 
-                </nav>
+    <a href="index.html">
+        🌐 Voir la boutique
+    </a>
+
+</nav>
 
             </aside>
 
@@ -543,6 +626,85 @@
 
                 </section>
 
+                <section id="administrateurs" class="mt-5">
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-body p-4">
+
+            <h4 class="mb-4">
+                Gestion des administrateurs
+            </h4>
+
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-4">
+                    <input
+                        type="text"
+                        id="nom-admin"
+                        class="form-control"
+                        placeholder="Nom complet"
+                    >
+                </div>
+
+                <div class="col-md-4">
+                    <input
+                        type="email"
+                        id="email-admin"
+                        class="form-control"
+                        placeholder="Adresse e-mail"
+                    >
+                </div>
+
+                <div class="col-md-4">
+                    <input
+                        type="password"
+                        id="motdepasse-admin"
+                        class="form-control"
+                        placeholder="Mot de passe"
+                    >
+                </div>
+
+            </div>
+
+            <button class="btn btn-dark" id="ajouter-admin">
+                Ajouter un administrateur
+            </button>
+
+            <hr class="my-4">
+
+            <h5 class="mb-3">Liste des administrateurs</h5>
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nom</th>
+                            <th>Email</th>
+                            <th>Date de création</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="table-administrateurs">
+                        <tr>
+                            <td colspan="4" class="text-center">
+                                Chargement des administrateurs...
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
             </main>
 
         </div>
@@ -687,5 +849,158 @@
     <!-- JavaScript administrateur -->
     <script src="admin.js"></script>
 
+    <script>
+
+// Charger la liste des administrateurs
+async function chargerAdministrateurs() {
+
+    const tableau = document.getElementById("table-administrateurs");
+
+    try {
+
+        const reponse = await fetch("/api/admin/administrateurs");
+        const administrateurs = await reponse.json();
+
+        tableau.innerHTML = "";
+
+        if (!reponse.ok) {
+            throw new Error(administrateurs.message || "Erreur de chargement.");
+        }
+
+        if (administrateurs.length === 0) {
+            tableau.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center">
+                        Aucun administrateur enregistré.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        administrateurs.forEach(admin => {
+
+            const ligne = document.createElement("tr");
+
+            const nom = document.createElement("td");
+            nom.textContent = admin.nom;
+
+            const email = document.createElement("td");
+            email.textContent = admin.email;
+
+            const date = document.createElement("td");
+            date.textContent = new Date(admin.date_creation).toLocaleDateString("fr-FR");
+
+            const action = document.createElement("td");
+            const bouton = document.createElement("button");
+
+            bouton.className = "btn btn-danger btn-sm";
+            bouton.textContent = "Supprimer";
+
+            bouton.addEventListener("click", () => supprimerAdministrateur(admin.id));
+
+            action.appendChild(bouton);
+
+            ligne.append(nom, email, date, action);
+
+            tableau.appendChild(ligne);
+
+        });
+
+    } catch (erreur) {
+
+        tableau.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center text-danger">
+                    ${erreur.message}
+                </td>
+            </tr>
+        `;
+
+    }
+
+}
+
+
+// Ajouter un administrateur
+document.getElementById("ajouter-admin").addEventListener("click", async () => {
+
+    const nom = document.getElementById("nom-admin").value.trim();
+    const email = document.getElementById("email-admin").value.trim();
+    const motDePasse = document.getElementById("motdepasse-admin").value;
+
+    if (!nom || !email || !motDePasse) {
+        alert("Veuillez remplir tous les champs.");
+        return;
+    }
+
+    try {
+
+        const reponse = await fetch("/api/admin/administrateurs", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ nom, email, motDePasse })
+        });
+
+        const resultat = await reponse.json();
+
+        if (!reponse.ok) {
+            alert(resultat.message);
+            return;
+        }
+
+        alert(resultat.message);
+
+        document.getElementById("nom-admin").value = "";
+        document.getElementById("email-admin").value = "";
+        document.getElementById("motdepasse-admin").value = "";
+
+        chargerAdministrateurs();
+
+    } catch (erreur) {
+
+        alert("Impossible de contacter le serveur.");
+
+    }
+
+});
+
+
+// Supprimer un administrateur
+async function supprimerAdministrateur(id) {
+
+    if (!confirm("Voulez-vous vraiment supprimer cet administrateur ?")) {
+        return;
+    }
+
+    try {
+
+        const reponse = await fetch(`/api/admin/administrateurs/${id}`, {
+            method: "DELETE"
+        });
+
+        const resultat = await reponse.json();
+
+        alert(resultat.message);
+
+        if (reponse.ok) {
+            chargerAdministrateurs();
+        }
+
+    } catch (erreur) {
+
+        alert("Erreur de communication avec le serveur.");
+
+    }
+
+}
+
+
+// Chargement automatique
+chargerAdministrateurs();
+
+</script>
 </body>
 </html>

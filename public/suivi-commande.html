@@ -1,0 +1,275 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivre ma commande - THE SNACK SPOT</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+ <style>
+
+body {
+    background: #fff8f1;
+    font-family: 'Segoe UI', sans-serif;
+    color: #3d342e;
+}
+
+.suivi-card {
+    max-width: 500px;
+    margin: 80px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 5px 25px rgba(80,50,20,.08);
+}
+
+.btn-orange {
+    background: #e8792e;
+    color: white;
+    border: none;
+}
+
+.btn-orange:hover {
+    background: #cf641f;
+    color: white;
+}
+
+/* Barre de progression */
+
+.suivi-progression {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin: 35px 5px 20px;
+}
+
+.suivi-progression::before {
+    content: "";
+    position: absolute;
+    top: 12px;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: #ddd;
+    z-index: 0;
+}
+
+.etape-suivi {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    font-size: 12px;
+    color: #888;
+    width: 25%;
+}
+
+.cercle-suivi {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #ddd;
+    margin: 0 auto 8px;
+}
+
+.etape-suivi.active {
+    color: #198754;
+    font-weight: bold;
+}
+
+.etape-suivi.active .cercle-suivi {
+    background: #198754;
+}
+
+.etape-suivi.terminee .cercle-suivi {
+    background: #198754;
+}
+
+ </style>   
+
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="suivi-card">
+
+            <h2 class="text-center mb-3">🥞 THE SNACK SPOT</h2>
+
+            <h4 class="text-center mb-4">Suivre ma commande</h4>
+
+            <form id="form-suivi">
+
+                <div class="mb-3">
+                    <label class="form-label">Numéro de commande</label>
+                    <input type="number" id="numero-commande"
+                        class="form-control"
+                        placeholder="Exemple : 15"
+                        required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Numéro de téléphone</label>
+                    <input type="tel" id="telephone-client"
+                        class="form-control"
+                        placeholder="Votre numéro de téléphone"
+                        required>
+                </div>
+
+                <button type="submit" class="btn btn-orange w-100">
+                    Suivre ma commande
+                </button>
+
+            </form>
+
+            <div id="resultat-suivi"></div>
+
+<div id="progression-commande"></div>
+<div id="message-statut" class="alert mt-3"></div>
+        </div>
+    </div>
+
+
+<script>
+    let intervalleSuivi = null;
+
+    // Afficher la barre de progression
+    function afficherProgression(statut) {
+
+        const progression = document.getElementById("progression-commande");
+
+        const etapes = [
+            "En attente",
+            "En préparation",
+            "Prête",
+            "Livrée"
+        ];
+
+        const indexActuel = etapes.indexOf(statut);
+
+        progression.innerHTML = `
+            <div class="suivi-progression">
+                ${etapes.map((etape, index) => `
+                    <div class="etape-suivi ${
+                        index <= indexActuel ? "active" : ""
+                    }">
+                        <div class="cercle-suivi"></div>
+                        ${etape}
+                    </div>
+                `).join("")}
+            </div>
+        `;
+    }
+
+
+function afficherMessageStatut(statut) {
+
+    const message = document.getElementById("message-statut");
+
+    const messages = {
+        "En attente": {
+            texte: "Votre commande a bien été enregistrée. Nous allons bientôt la préparer.",
+            couleur: "alert-warning"
+        },
+
+        "En préparation": {
+            texte: "Bonne nouvelle ! Votre commande est en cours de préparation.",
+            couleur: "alert-info"
+        },
+
+        "Prête": {
+    texte: "Votre commande est prête ! Vous pouvez venir la récupérer à l'entrée principale de Graduate School of Management (GSM), Palmeraie, Abidjan.",
+    couleur: "alert-success"
+},
+
+        "Livrée": {
+            texte: "Votre commande a été livrée. Merci pour votre confiance !",
+            couleur: "alert-success"
+        }
+    };
+
+    const resultat = messages[statut];
+
+    message.className = "alert mt-3 " + (resultat ? resultat.couleur : "alert-secondary");
+    message.textContent = resultat ? resultat.texte : "Statut actuel : " + statut;
+}
+
+    // Rechercher une commande
+    async function rechercherCommande(numeroCommande, telephone) {
+
+        const resultat = document.getElementById("resultat-suivi");
+
+        try {
+
+            const reponse = await fetch("/api/suivi-commande", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    numeroCommande,
+                    telephone
+                })
+            });
+
+            const commande = await reponse.json();
+
+            if (!reponse.ok) {
+                throw new Error(commande.message);
+            }
+
+            resultat.innerHTML = "";
+
+            const titre = document.createElement("h5");
+            titre.textContent = "Commande #" + commande.id;
+
+            const client = document.createElement("p");
+            client.textContent = "Client : " + commande.nom_client;
+
+            const statut = document.createElement("p");
+            statut.textContent = "Statut : " + commande.statut;
+
+            const total = document.createElement("p");
+            total.textContent = "Total : " +
+                Number(commande.total).toLocaleString("fr-FR") + " FCFA";
+
+            resultat.append(titre, client, statut, total);
+
+            // Actualiser la barre de progression
+            afficherProgression(commande.statut);
+afficherMessageStatut(commande.statut);
+        } catch (erreur) {
+
+            resultat.textContent = erreur.message;
+            document.getElementById("progression-commande").innerHTML = "";
+
+        }
+    }
+
+    // Soumission du formulaire
+    document.getElementById("form-suivi").addEventListener("submit", async (e) => {
+
+        e.preventDefault();
+
+        const numeroCommande = document.getElementById("numero-commande").value;
+        const telephone = document.getElementById("telephone-client").value.trim();
+
+        document.getElementById("resultat-suivi").textContent =
+            "Recherche de votre commande...";
+
+        if (intervalleSuivi) {
+            clearInterval(intervalleSuivi);
+        }
+
+        await rechercherCommande(numeroCommande, telephone);
+
+        intervalleSuivi = setInterval(() => {
+            rechercherCommande(numeroCommande, telephone);
+        }, 5000);
+
+    });
+</script>
+
+</body>
+</html>

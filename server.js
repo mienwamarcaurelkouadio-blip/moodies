@@ -7,6 +7,10 @@ const connexion = require("./database");
 const app = express();
 const port = process.env.PORT || 3000;
 
+// =================================
+// SESSION
+// =================================
+
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -19,25 +23,36 @@ app.use(session({
     }
 }));
 
-// Autoriser la lecture des données JSON
 app.use(express.json());
 
-// Afficher les fichiers du dossier public
-// VERIFIER SI L'ADMINISTRATEUR EST CONNECTE
+// =================================
+// VERIFICATION ADMIN
+// =================================
+
 function verifierAdmin(req, res, next) {
-    
     if (!req.session.admin) {
-        return res.status(401).json({
-            message: "Accès refusé. Veuillez vous connecter."
-        });
+        return res.redirect("/connexion");
     }
 
     next();
 }
 
-// PROTEGER LA PAGE ADMIN
-app.get("/admin.html", (req, res) => {
+// =================================
+// JOURNAL DES REQUETES
+// =================================
 
+app.use((req, res, next) => {
+    console.log("REQUÊTE REÇUE :", req.method, req.url);
+    next();
+});
+
+app.use(express.static("public"));
+
+// =================================
+// PAGES ADMIN
+// =================================
+
+app.get("/admin.html", (req, res) => {
     if (!req.session.admin) {
         return res.redirect("/login.html");
     }
@@ -45,14 +60,157 @@ app.get("/admin.html", (req, res) => {
     res.sendFile(__dirname + "/public/admin.html");
 });
 
-app.use(express.static("public"));
+app.get("/admin", verifierAdmin, (req, res) => {
+    res.sendFile(__dirname + "/public/admin.html");
+});
 
-// Route de test
+app.get("/connexion", (req, res) => {
+    if (req.session.admin) {
+        return res.redirect("/admin");
+    }
+
+    res.sendFile(__dirname + "/public/connexion.html");
+});
+
+// =================================
+// ADMINISTRATEURS
+// =================================
+
+app.get("/api/admin/administrateurs", verifierAdmin, (req, res) => {
+
+    const sql = `
+        SELECT id, nom, email, date_creation
+        FROM administrateurs
+        ORDER BY id DESC
+    `;
+
+    connexion.query(sql, (erreur, resultats) => {
+
+        if (erreur) {
+            console.error(erreur.message);
+
+            return res.status(500).json({
+                message: "Erreur lors du chargement des administrateurs."
+            });
+        }
+
+        res.json(resultats);
+    });
+});
+
+app.post("/api/admin/administrateurs", verifierAdmin, async (req, res) => {
+
+    const { nom, email, motDePasse } = req.body;
+
+    if (!nom || !email || !motDePasse) {
+        return res.status(400).json({
+            message: "Veuillez remplir tous les champs."
+        });
+    }
+
+    if (motDePasse.length < 8) {
+        return res.status(400).json({
+            message: "Le mot de passe doit contenir au moins 8 caractères."
+        });
+    }
+
+    try {
+
+        const motDePasseHash = await bcrypt.hash(motDePasse, 10);
+
+        const sql = `
+            INSERT INTO administrateurs (nom, email, mot_de_passe)
+            VALUES (?, ?, ?)
+        `;
+
+        connexion.query(
+            sql,
+            [nom, email, motDePasseHash],
+            (erreur, resultat) => {
+
+                if (erreur) {
+
+                    if (erreur.code === "ER_DUP_ENTRY") {
+                        return res.status(409).json({
+                            message: "Cette adresse email est déjà utilisée."
+                        });
+                    }
+
+                    console.error(erreur.message);
+
+                    return res.status(500).json({
+                        message: "Erreur lors de la création du compte."
+                    });
+                }
+
+                res.status(201).json({
+                    message: "Administrateur ajouté avec succès !"
+                });
+            }
+        );
+
+    } catch (erreur) {
+
+        console.error(erreur.message);
+
+        res.status(500).json({
+            message: "Erreur lors de la sécurisation du mot de passe."
+        });
+    }
+});
+
+app.delete("/api/admin/administrateurs/:id", verifierAdmin, (req, res) => {
+
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({
+            message: "Identifiant invalide."
+        });
+    }
+
+    if (id === Number(req.session.admin.id)) {
+        return res.status(403).json({
+            message: "Vous ne pouvez pas supprimer votre propre compte."
+        });
+    }
+
+    const sql = "DELETE FROM administrateurs WHERE id = ?";
+
+    connexion.query(sql, [id], (erreur, resultat) => {
+
+        if (erreur) {
+            console.error(erreur.message);
+
+            return res.status(500).json({
+                message: "Erreur lors de la suppression."
+            });
+        }
+
+        if (resultat.affectedRows === 0) {
+            return res.status(404).json({
+                message: "Administrateur introuvable."
+            });
+        }
+
+        res.json({
+            message: "Administrateur supprimé avec succès."
+        });
+    });
+});
+
+// =================================
+// ROUTE DE TEST
+// =================================
+
 app.get("/test", (req, res) => {
     res.send("Mon premier message venant du serveur !");
 });
 
-// Panier temporaire
+// =================================
+// PANIER TEMPORAIRE
+// =================================
+
 let panier = [];
 
 app.post("/api/panier", (req, res) => {
@@ -65,45 +223,34 @@ app.post("/api/panier", (req, res) => {
         message: "Produit ajouté au panier",
         panier: panier
     });
-
 });
 
-// Récupérer les produits depuis MySQL
+// =================================
+// PRODUITS
+// =================================
+
 app.get("/api/produits", (req, res) => {
 
-    console.log("Requête reçue : récupération des produits");
-
     const sql = "SELECT * FROM produits";
+
     connexion.query(sql, (erreur, resultats) => {
 
         if (erreur) {
-
             console.error("Erreur MySQL :", erreur.message);
 
             return res.status(500).json({
-                message: "Impossible de récupérer les produits"
+                message: "Impossible de récupérer les produits."
             });
-
         }
 
-        console.log("Résultats reçus de MySQL :", resultats);
-
         res.json(resultats);
-
     });
-
 });
-
-
-/* =================================
-   AJOUTER UN PRODUIT DANS MYSQL
-================================= */
 
 app.post("/api/produits", verifierAdmin, (req, res) => {
 
     const { nom, description, prix, image, stock } = req.body;
 
-    // Vérifier les informations reçues
     if (
         !nom ||
         !description ||
@@ -118,7 +265,6 @@ app.post("/api/produits", verifierAdmin, (req, res) => {
         });
     }
 
-    // Vérifier les valeurs numériques
     if (
         !Number.isFinite(Number(prix)) ||
         Number(prix) <= 0 ||
@@ -136,37 +282,26 @@ app.post("/api/produits", verifierAdmin, (req, res) => {
         VALUES (?, ?, ?, ?, ?)
     `;
 
-    const valeurs = [
-        nom,
-        description,
-        Number(prix),
-        image,
-        Number(stock)
-    ];
+    connexion.query(
+        sql,
+        [nom, description, Number(prix), image, Number(stock)],
+        (erreur, resultat) => {
 
-    connexion.query(sql, valeurs, (erreur, resultat) => {
+            if (erreur) {
+                console.error(erreur.message);
 
-        if (erreur) {
-            console.error("Erreur MySQL :", erreur.message);
+                return res.status(500).json({
+                    message: "Erreur lors de l'ajout du produit."
+                });
+            }
 
-            return res.status(500).json({
-                message: "Erreur lors de l'ajout du produit."
+            res.status(201).json({
+                message: "Produit ajouté avec succès !",
+                id: resultat.insertId
             });
         }
-
-        res.status(201).json({
-            message: "Produit ajouté avec succès !",
-            id: resultat.insertId
-        });
-
-    });
-
+    );
 });
-
-
-/* =================================
-   MODIFIER UN PRODUIT
-================================= */
 
 app.put("/api/produits/:id", verifierAdmin, (req, res) => {
 
@@ -204,43 +339,38 @@ app.put("/api/produits/:id", verifierAdmin, (req, res) => {
         WHERE id = ?
     `;
 
-    const valeurs = [
-        nom.trim(),
-        description.trim(),
-        Number(prix),
-        image.trim(),
-        Number(stock),
-        id
-    ];
+    connexion.query(
+        sql,
+        [
+            nom.trim(),
+            description.trim(),
+            Number(prix),
+            image.trim(),
+            Number(stock),
+            id
+        ],
+        (erreur, resultat) => {
 
-    connexion.query(sql, valeurs, (erreur, resultat) => {
+            if (erreur) {
+                console.error(erreur.message);
 
-        if (erreur) {
-            console.error(erreur.message);
+                return res.status(500).json({
+                    message: "Erreur lors de la modification."
+                });
+            }
 
-            return res.status(500).json({
-                message: "Erreur lors de la modification."
+            if (resultat.affectedRows === 0) {
+                return res.status(404).json({
+                    message: "Produit introuvable."
+                });
+            }
+
+            res.json({
+                message: "Produit modifié avec succès !"
             });
         }
-
-        if (resultat.affectedRows === 0) {
-            return res.status(404).json({
-                message: "Produit introuvable."
-            });
-        }
-
-        res.json({
-            message: "Produit modifié avec succès !"
-        });
-
-    });
-
+    );
 });
-
-
-/* =================================
-   SUPPRIMER UN PRODUIT
-================================= */
 
 app.delete("/api/produits/:id", verifierAdmin, (req, res) => {
 
@@ -273,14 +403,12 @@ app.delete("/api/produits/:id", verifierAdmin, (req, res) => {
         res.json({
             message: "Produit supprimé avec succès !"
         });
-
     });
-
 });
 
-/* =================================
-   ENREGISTRER UNE COMMANDE
-================================= */
+// =================================
+// ENREGISTRER UNE COMMANDE
+// =================================
 
 app.post("/api/commandes", (req, res) => {
 
@@ -293,7 +421,6 @@ app.post("/api/commandes", (req, res) => {
         produits
     } = req.body;
 
-    // 1. Vérifier les informations du client
     if (
         !nom?.trim() ||
         !telephone?.trim() ||
@@ -316,7 +443,6 @@ app.post("/api/commandes", (req, res) => {
         });
     }
 
-    // 2. Vérifier les identifiants et quantités
     const quantites = new Map();
 
     for (const produit of produits) {
@@ -341,170 +467,182 @@ app.post("/api/commandes", (req, res) => {
 
     const ids = [...quantites.keys()];
 
-    // Fonction pour utiliser les requêtes MySQL avec Promise
-    const executer = (sql, valeurs = []) => {
-        return new Promise((resolve, reject) => {
-            connexion.query(sql, valeurs, (erreur, resultat) => {
-                if (erreur) {
-                    reject(erreur);
-                } else {
-                    resolve(resultat);
-                }
-            });
-        });
-    };
+    // Obtenir une véritable connexion pour la transaction
+    connexion.getConnection((erreurConnexion, connection) => {
 
-    // 3. Démarrer une transaction MySQL
-    connexion.beginTransaction(async (erreur) => {
-
-        if (erreur) {
-            console.error(erreur.message);
+        if (erreurConnexion) {
+            console.error("Connexion MySQL :", erreurConnexion.message);
 
             return res.status(500).json({
-                message: "Impossible de démarrer la commande."
+                message: "Impossible de se connecter à la base de données."
             });
         }
 
-        try {
+        const executer = (sql, valeurs = []) => {
+            return new Promise((resolve, reject) => {
 
-            // Récupérer les produits et verrouiller leurs lignes
-            const placeholders = ids.map(() => "?").join(",");
+                connection.query(sql, valeurs, (erreur, resultat) => {
 
-            const sqlProduits = `
-                SELECT id, nom, prix, stock
-                FROM produits
-                WHERE id IN (${placeholders})
-                FOR UPDATE
-            `;
+                    if (erreur) {
+                        return reject(erreur);
+                    }
 
-            const produitsBDD = await executer(sqlProduits, ids);
+                    resolve(resultat);
+                });
+            });
+        };
 
-            // 4. Vérifier les produits et les stocks
-            if (produitsBDD.length !== ids.length) {
-                throw new Error("Un produit de votre panier n'existe plus.");
+        connection.beginTransaction(async (erreurTransaction) => {
+
+            if (erreurTransaction) {
+                console.error(erreurTransaction.message);
+                connection.release();
+
+                return res.status(500).json({
+                    message: "Impossible de démarrer la commande."
+                });
             }
 
-            let sousTotal = 0;
+            try {
 
-            for (const produit of produitsBDD) {
+                // Verrouiller les produits pendant la commande
+                const placeholders = ids.map(() => "?").join(",");
 
-                const quantite = quantites.get(produit.id);
+                const sqlProduits = `
+                    SELECT id, nom, prix, stock
+                    FROM produits
+                    WHERE id IN (${placeholders})
+                    FOR UPDATE
+                `;
 
-                if (produit.stock < quantite) {
-                    throw new Error(
-                        `Stock insuffisant pour : ${produit.nom}`
+                const produitsBDD = await executer(sqlProduits, ids);
+
+                if (produitsBDD.length !== ids.length) {
+                    throw new Error("Un produit de votre panier n'existe plus.");
+                }
+
+                let sousTotal = 0;
+
+                for (const produit of produitsBDD) {
+
+                    const quantite = quantites.get(produit.id);
+
+                    if (produit.stock < quantite) {
+                        throw new Error(
+                            `Stock insuffisant pour : ${produit.nom}`
+                        );
+                    }
+
+                    sousTotal += Number(produit.prix) * quantite;
+                }
+
+                const fraisLivraison =
+                    modeReception === "Livraison à domicile" ? 1000 : 0;
+
+                const total = sousTotal + fraisLivraison;
+
+                const adresseFinale =
+                    modeReception === "Livraison à domicile"
+                        ? adresse.trim()
+                        : "";
+
+                // Enregistrer la commande
+                const sqlCommande = `
+                    INSERT INTO commandes
+                    (nom_client, telephone, adresse, total,
+                     mode_reception, mode_paiement)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                `;
+
+                const resultatCommande = await executer(sqlCommande, [
+                    nom.trim(),
+                    telephone.trim(),
+                    adresseFinale,
+                    total,
+                    modeReception,
+                    modePaiement
+                ]);
+
+                const commandeId = resultatCommande.insertId;
+
+                // Enregistrer les détails et diminuer le stock
+                for (const produit of produitsBDD) {
+
+                    const quantite = quantites.get(produit.id);
+
+                    await executer(
+                        `INSERT INTO details_commandes
+                        (commande_id, produit_id, quantite, prix_unitaire)
+                        VALUES (?, ?, ?, ?)`,
+                        [
+                            commandeId,
+                            produit.id,
+                            quantite,
+                            produit.prix
+                        ]
+                    );
+
+                    await executer(
+                        `UPDATE produits
+                        SET stock = stock - ?
+                        WHERE id = ?`,
+                        [quantite, produit.id]
                     );
                 }
 
-                sousTotal += Number(produit.prix) * quantite;
-            }
+                // Valider la transaction
+                connection.commit((erreurCommit) => {
 
-            // 5. Calculer le total
-            const fraisLivraison =
-                modeReception === "Livraison à domicile" ? 1000 : 0;
+                    if (erreurCommit) {
 
-            const total = sousTotal + fraisLivraison;
+                        return connection.rollback(() => {
 
-            const adresseFinale =
-                modeReception === "Livraison à domicile"
-                    ? adresse.trim()
-                    : "";
+                            connection.release();
 
-            // 6. Enregistrer la commande
-            const sqlCommande = `
-                INSERT INTO commandes
-                (nom_client, telephone, adresse, total,
-                 mode_reception, mode_paiement)
-                VALUES (?, ?, ?, ?, ?, ?)
-            `;
+                            console.error(erreurCommit.message);
 
-            const resultatCommande = await executer(sqlCommande, [
-                nom.trim(),
-                telephone.trim(),
-                adresseFinale,
-                total,
-                modeReception,
-                modePaiement
-            ]);
-
-            const commandeId = resultatCommande.insertId;
-
-            // 7. Enregistrer chaque produit commandé
-            for (const produit of produitsBDD) {
-
-                const quantite = quantites.get(produit.id);
-
-                await executer(
-                    `INSERT INTO details_commandes
-                    (commande_id, produit_id, quantite, prix_unitaire)
-                    VALUES (?, ?, ?, ?)`,
-                    [
-                        commandeId,
-                        produit.id,
-                        quantite,
-                        produit.prix
-                    ]
-                );
-
-                // 8. Déduire la quantité du stock
-                await executer(
-                    `UPDATE produits
-                    SET stock = stock - ?
-                    WHERE id = ?`,
-                    [quantite, produit.id]
-                );
-            }
-
-            // 9. Valider toutes les opérations
-            connexion.commit((erreurCommit) => {
-
-                if (erreurCommit) {
-                    return connexion.rollback(() => {
-                        console.error(erreurCommit.message);
-
-                        res.status(500).json({
-                            message: "Impossible de valider la commande."
+                            res.status(500).json({
+                                message: "Impossible de valider la commande."
+                            });
                         });
+                    }
+
+                    connection.release();
+
+                    res.status(201).json({
+                        message: "Commande enregistrée avec succès !",
+                        commandeId: commandeId,
+                        total: total
                     });
-                }
-
-                res.status(201).json({
-                    message: "Commande enregistrée avec succès !",
-                    commandeId: commandeId,
-                    total: total
                 });
 
-            });
+            } catch (erreur) {
 
-        } catch (erreur) {
+                connection.rollback(() => {
 
-            // Annuler toutes les opérations en cas de problème
-            connexion.rollback(() => {
+                    connection.release();
 
-                console.error("Erreur commande :", erreur.message);
+                    console.error("Erreur commande :", erreur.message);
 
-                const erreurStock =
-                    erreur.message.startsWith("Stock insuffisant") ||
-                    erreur.message.includes("n'existe plus");
+                    const erreurStock =
+                        erreur.message.startsWith("Stock insuffisant") ||
+                        erreur.message.includes("n'existe plus");
 
-                res.status(erreurStock ? 409 : 500).json({
-                    message: erreur.message
+                    res.status(erreurStock ? 409 : 500).json({
+                        message: erreur.message
+                    });
                 });
-
-            });
-
-        }
-
+            }
+        });
     });
-
 });
 
-
-/* =================================
-   AFFICHER TOUTES LES COMMANDES
-================================= */
+// =================================
+// AFFICHER TOUTES LES COMMANDES
+// =================================
 
 app.get("/api/commandes", verifierAdmin, (req, res) => {
+
     const sql = `
         SELECT
             c.*,
@@ -523,6 +661,7 @@ app.get("/api/commandes", verifierAdmin, (req, res) => {
 
         if (erreur) {
             console.error(erreur.message);
+
             return res.status(500).json({
                 message: "Impossible de récupérer les commandes."
             });
@@ -554,19 +693,15 @@ app.get("/api/commandes", verifierAdmin, (req, res) => {
                     prix: ligne.prix_unitaire
                 });
             }
-
         });
 
         res.json(Object.values(commandes));
-
     });
-
 });
 
-
-/* =================================
-   COMMANDES AVEC PAGINATION ET FILTRES
-================================= */
+// =================================
+// COMMANDES AVEC PAGINATION ET FILTRES
+// =================================
 
 app.get("/api/commandes/paginees", verifierAdmin, (req, res) => {
 
@@ -586,7 +721,10 @@ app.get("/api/commandes/paginees", verifierAdmin, (req, res) => {
     }
 
     if (recherche) {
-        conditions.push("(CAST(id AS CHAR) LIKE ? OR nom_client LIKE ? OR telephone LIKE ?)");
+
+        conditions.push(
+            "(CAST(id AS CHAR) LIKE ? OR nom_client LIKE ? OR telephone LIKE ?)"
+        );
 
         const terme = `%${recherche}%`;
 
@@ -607,6 +745,7 @@ app.get("/api/commandes/paginees", verifierAdmin, (req, res) => {
 
         if (erreur) {
             console.error(erreur.message);
+
             return res.status(500).json({
                 message: "Erreur lors du comptage des commandes."
             });
@@ -642,6 +781,7 @@ app.get("/api/commandes/paginees", verifierAdmin, (req, res) => {
 
                 if (erreur) {
                     console.error(erreur.message);
+
                     return res.status(500).json({
                         message: "Erreur lors du chargement des commandes."
                     });
@@ -673,7 +813,6 @@ app.get("/api/commandes/paginees", verifierAdmin, (req, res) => {
                             prix: ligne.prix_unitaire
                         });
                     }
-
                 });
 
                 res.json({
@@ -682,19 +821,14 @@ app.get("/api/commandes/paginees", verifierAdmin, (req, res) => {
                     page: page,
                     totalPages: totalPages
                 });
-
             }
         );
-
     });
-
 });
 
-
-
-/* =================================
-   MODIFIER LE STATUT D'UNE COMMANDE
-================================= */
+// =================================
+// MODIFIER LE STATUT D'UNE COMMANDE
+// =================================
 
 app.put("/api/commandes/:id/statut", verifierAdmin, (req, res) => {
 
@@ -725,6 +859,7 @@ app.put("/api/commandes/:id/statut", verifierAdmin, (req, res) => {
 
         if (erreur) {
             console.error(erreur.message);
+
             return res.status(500).json({
                 message: "Erreur lors de la modification du statut."
             });
@@ -736,20 +871,31 @@ app.put("/api/commandes/:id/statut", verifierAdmin, (req, res) => {
             });
         }
 
-        res.json({
-            message: "Statut de la commande modifié !"
-        });
+        connexion.query(
+            "SELECT id, nom_client, telephone FROM commandes WHERE id = ?",
+            [id],
+            (erreurLecture, commandes) => {
 
+                if (erreurLecture) {
+                    console.error(erreurLecture.message);
+
+                    return res.status(500).json({
+                        message: "Statut modifié, mais impossible de récupérer les informations du client."
+                    });
+                }
+
+                res.json({
+                    message: "Statut de la commande modifié !",
+                    commande: commandes[0]
+                });
+            }
+        );
     });
-
 });
 
-
+// =================================
 // STATISTIQUES DU TABLEAU DE BORD
-
-/* =================================
-   STATISTIQUES DU TABLEAU DE BORD
-================================= */
+// =================================
 
 app.get("/api/statistiques", verifierAdmin, (req, res) => {
 
@@ -792,15 +938,12 @@ app.get("/api/statistiques", verifierAdmin, (req, res) => {
         }
 
         res.json(resultats[0]);
-
     });
-
 });
 
-
-/* =================================
-   EVOLUTION DES VENTES SUR 7 JOURS
-================================= */
+// =================================
+// EVOLUTION DES VENTES SUR 7 JOURS
+// =================================
 
 app.get("/api/statistiques/ventes", verifierAdmin, (req, res) => {
 
@@ -835,12 +978,13 @@ app.get("/api/statistiques/ventes", verifierAdmin, (req, res) => {
         }
 
         res.json(resultats);
-
     });
-
 });
 
+// =================================
 // CONNEXION ADMINISTRATEUR
+// =================================
+
 app.post("/api/admin/connexion", (req, res) => {
 
     const { email, motDePasse } = req.body;
@@ -856,7 +1000,8 @@ app.post("/api/admin/connexion", (req, res) => {
     connexion.query(sql, [email], async (erreur, resultats) => {
 
         if (erreur) {
-            console.error(erreur);
+            console.error(erreur.message);
+
             return res.status(500).json({
                 message: "Erreur du serveur."
             });
@@ -883,44 +1028,41 @@ app.post("/api/admin/connexion", (req, res) => {
 
         req.session.regenerate((erreurRegeneration) => {
 
-    if (erreurRegeneration) {
-        console.error(erreurRegeneration);
+            if (erreurRegeneration) {
+                console.error(erreurRegeneration.message);
 
-        return res.status(500).json({
-            message: "Impossible de sécuriser la session."
-        });
-    }
+                return res.status(500).json({
+                    message: "Impossible de sécuriser la session."
+                });
+            }
 
-    req.session.admin = {
-        id: administrateur.id,
-        nom: administrateur.nom,
-        email: administrateur.email
-    };
+            req.session.admin = {
+                id: administrateur.id,
+                nom: administrateur.nom,
+                email: administrateur.email
+            };
 
-    req.session.save((erreurSession) => {
+            req.session.save((erreurSession) => {
 
-        if (erreurSession) {
-            console.error(erreurSession);
+                if (erreurSession) {
+                    console.error(erreurSession.message);
 
-            return res.status(500).json({
-                message: "Impossible de créer la session."
+                    return res.status(500).json({
+                        message: "Impossible de créer la session."
+                    });
+                }
+
+                res.json({
+                    message: "Connexion réussie !"
+                });
             });
-        }
-
-        res.json({
-            message: "Connexion réussie !"
         });
-
     });
-
 });
 
-    });
-
-});
-
-       
-
+// =================================
+// DECONNEXION ADMINISTRATEUR
+// =================================
 
 app.post("/api/admin/deconnexion", (req, res) => {
 
@@ -935,13 +1077,79 @@ app.post("/api/admin/deconnexion", (req, res) => {
         res.json({
             message: "Déconnexion réussie !"
         });
-
     });
-
 });
-// Démarrer le serveur
+
+// =================================
+// TEST SUIVI DE COMMANDE
+// =================================
+
+app.get("/api/test-suivi", (req, res) => {
+
+    console.log("TEST SUIVI ATTEINT");
+
+    res.send("ROUTE TEST OK");
+});
+
+// =================================
+// SUIVI DE COMMANDE
+// =================================
+
+app.post("/api/suivi-commande", (req, res) => {
+
+    console.log("ROUTE SUIVI APPELEE", req.body);
+
+    const { numeroCommande, telephone } = req.body;
+
+    if (!numeroCommande || !telephone) {
+        return res.status(400).json({
+            message: "Veuillez remplir tous les champs."
+        });
+    }
+
+    const sql = `
+        SELECT
+            id,
+            nom_client,
+            telephone,
+            statut,
+            total,
+            date_commande,
+            mode_reception
+        FROM commandes
+        WHERE id = ? AND telephone = ?
+    `;
+
+    connexion.query(
+        sql,
+        [numeroCommande, telephone],
+        (erreur, resultats) => {
+
+            if (erreur) {
+                console.error(erreur.message);
+
+                return res.status(500).json({
+                    message: "Erreur lors de la recherche de votre commande."
+                });
+            }
+
+            if (resultats.length === 0) {
+                return res.status(404).json({
+                    message: "Aucune commande trouvée. Vérifiez votre numéro de commande et votre téléphone."
+                });
+            }
+
+            res.json(resultats[0]);
+        }
+    );
+});
+
+// =================================
+// DEMARRER LE SERVEUR
+// =================================
+
+console.log("VERSION TEST SUIVI CHARGEE");
+
 app.listen(port, () => {
-
     console.log(`Serveur lancé sur http://localhost:${port}`);
-
 });

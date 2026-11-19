@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 const mysql = require("mysql2");
 
@@ -22,9 +23,16 @@ const options = utiliserTiDB
         port: Number(process.env.DB_PORT)
     };
 
-const connexion = mysql.createConnection(options);
+const connexion = mysql.createPool({
+    ...options,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0
+});
 
-connexion.connect((erreur) => {
+connexion.getConnection((erreur, connection) => {
     if (erreur) {
         console.error("Erreur de connexion à la base de données :", erreur.message);
         return;
@@ -35,6 +43,8 @@ connexion.connect((erreur) => {
             ? "Connexion à TiDB Cloud réussie !"
             : "Connexion à MySQL local réussie !"
     );
+
+    connection.release();
 });
 
 module.exports = connexion;

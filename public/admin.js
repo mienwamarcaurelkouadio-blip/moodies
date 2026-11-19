@@ -318,7 +318,18 @@ async function chargerCommandes() {
                     "Livrée",
                     "Annulée"
                 ];
+function obtenirCouleurStatut(statut) {
 
+    const couleurs = {
+        "En attente": "#ffc107",
+        "En préparation": "#0dcaf0",
+        "Prête": "#198754",
+        "Livrée": "#6c757d",
+        "Annulée": "#dc3545"
+    };
+
+    return couleurs[statut] || "#ffffff";
+}
                 const menuStatut = options.map(statut => `
                     <option value="${statut}"
                         ${commande.statut === statut ? "selected" : ""}>
@@ -346,11 +357,13 @@ async function chargerCommandes() {
                         <td>${date}</td>
 
                         <td>
-                            <select
-                                class="form-select form-select-sm select-statut"
-                                data-id="${commande.id}">
-                                ${menuStatut}
-                            </select>
+    <select
+        class="form-select form-select-sm select-statut"
+        style="background-color: ${obtenirCouleurStatut(commande.statut)}; color: #212529;"
+        data-id="${commande.id}">
+        ${menuStatut}
+    </select>
+</td>
                         </td>
                     </tr>
                 `;
@@ -404,22 +417,25 @@ async function chargerCommandes() {
    MODIFIER LE STATUT
 ================================= */
 
+
+
+
 async function modifierStatutCommande(id, statut) {
+
+    // Préparer WhatsApp uniquement si la commande est prête
+    const fenetreWhatsApp = statut === "Prête"
+        ? window.open("about:blank", "_blank")
+        : null;
 
     try {
 
-        const reponse = await fetch(
-            `/api/commandes/${id}/statut`,
-            {
-                method: "PUT",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify({ statut })
-            }
-        );
+        const reponse = await fetch(`/api/commandes/${id}/statut`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ statut })
+        });
 
         const resultat = await reponse.json();
 
@@ -429,16 +445,46 @@ async function modifierStatutCommande(id, statut) {
 
         alert(resultat.message);
 
+        // Notification WhatsApp lorsque la commande est prête
+        if (statut === "Prête" && resultat.commande) {
+
+            const client = resultat.commande;
+
+            let telephone = String(client.telephone).replace(/\D/g, "");
+
+            if (!telephone.startsWith("225")) {
+                telephone = "225" + telephone;
+            }
+
+            const message =
+    `Bonjour ${client.nom_client} ! 😊\n\n` +
+    `Votre commande N°${client.id} chez THE SNACK SPOT est prête ! 🥞\n\n` +
+    `📍 POINT DE RETRAIT :\n` +
+    `Graduate School of Management (GSM), Palmeraie, Abidjan.\n` +
+    `Lieu précis : Entrée principale.\n\n` +
+    `Nous vous attendons ! Merci pour votre confiance. ❤️`;
+            const lienWhatsApp =
+                `https://wa.me/${telephone}?text=${encodeURIComponent(message)}`;
+
+            if (fenetreWhatsApp) {
+                fenetreWhatsApp.location.href = lienWhatsApp;
+            }
+        }
+
         await chargerCommandes();
 
     } catch (erreur) {
 
+        console.error(erreur);
+
+        if (fenetreWhatsApp) {
+            fenetreWhatsApp.close();
+        }
+
         alert(erreur.message);
 
         await chargerCommandes();
-
     }
-
 }
 
 
